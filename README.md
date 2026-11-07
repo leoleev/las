@@ -125,5 +125,3 @@ Originally designed by [LeoLee](https://s.iee.li/l/u1), battle-tested across mul
 
 ---
 *v2.3 · kernel platform-agnostic · per-platform differences isolated to the adapter layer.*
-
-> （注：部分内容由豆包 AI 生成）
