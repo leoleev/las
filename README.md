@@ -1,4 +1,4 @@
-# Leo Agent Memory
+# Leo Agent System
 
 > File-based persistent memory for sandboxed AI agents — cross-session continuity, zero platform lock-in.
 
