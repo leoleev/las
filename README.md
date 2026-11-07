@@ -1,14 +1,25 @@
-Leo Agent Memory
-File-based persistent memory for sandboxed AI agents — cross-session continuity, zero platform lock-in.Why
+# Leo Agent Memory
+
+> File-based persistent memory for sandboxed AI agents — cross-session continuity, zero platform lock-in.
+
+## Why
+
 AI chat sessions reset to zero every time. New conversation, fresh context, same mistakes re-learned, same background re-explained.
-Leo Agent Memory pushes the agent's "external memory" into the filesystem: a fixed workspace directory that holds the rules, lessons, logs and assets the agent needs. Files don't forget, so the agent doesn't either. The same workspace can be zipped up and dropped into a brand-new session — boot to full context in under two minutes.
-The kernel is platform-agnostic. Every platform-specific quirk lives in a tiny adapter layer, so the same package runs on any agent platform that offers a sandbox with filesystem access.
-Core Ideas
-Files are memory — recall comes from files, not from conversation history.
-Directories are categories — stable rules go in README.md, growing knowledge in memory.md, running commentary in dated log-*.md.
-Logs are legacy — every lesson is appended as "problem → fix → applicability" so the next agent doesn't repeat it.
-Index is navigation — memory-index.md is a lightweight TOC. The agent reads the index, then jumps to the right file, never bulk-loading the whole vault.
-Workspace Layout
+
+**Leo Agent Memory** pushes the agent's "external memory" into the filesystem: a fixed workspace directory that holds the rules, lessons, logs and assets the agent needs. Files don't forget, so the agent doesn't either. The same workspace can be zipped up and dropped into a brand-new session — boot to full context in under two minutes.
+
+The kernel is **platform-agnostic**. Every platform-specific quirk lives in a tiny adapter layer, so the same package runs on any agent platform that offers a sandbox with filesystem access.
+
+## Core Ideas
+
+1. **Files are memory** — recall comes from files, not from conversation history.
+2. **Directories are categories** — stable rules go in `README.md`, growing knowledge in `memory.md`, running commentary in dated `log-*.md`.
+3. **Logs are legacy** — every lesson is appended as "problem → fix → applicability" so the next agent doesn't repeat it.
+4. **Index is navigation** — `memory-index.md` is a lightweight TOC. The agent reads the index, then jumps to the right file, never bulk-loading the whole vault.
+
+## Workspace Layout
+
+```
 leo/
 ├── README.md            # Constitution: rules, workflow, safety policy. AI may NOT edit without re-confirmation.
 ├── README1ST.md         # Immutable first-snapshot of the constitution. Never deleted.
@@ -19,9 +30,13 @@ leo/
 ├── code/                # Helper scripts (gen-filetree.py, vault_crypto.py)
 ├── pan/                 # Media: imga/ video/ audio/ document/
 └── log-YYYY.MM.DD-YYYY.MM.DD.md   # Rolling journal, archived per period.
+```
 
-All core filenames are intentionally English to dodge Content-Disposition / charset bugs on some platforms.
-Quickstart
+All core filenames are intentionally English to dodge `Content-Disposition` / charset bugs on some platforms.
+
+## Quickstart
+
+```bash
 # 1. Drop the skill into your agent's skill root, then:
 python3 scripts/scaffold.py /path/to/your-project
 
@@ -30,28 +45,40 @@ python3 scripts/scaffold.py /path/to/your-project
 #    shows it to you, and writes it to disk ONLY after you confirm.
 # 4. On that same confirmation, README1ST.md is created as a byte-identical snapshot.
 # 5. Back up README1ST.md somewhere outside the sandbox — it is the root of trust.
+```
 
-The Five-Step Loop
+## The Five-Step Loop
+
+```
 Store files → Do the task → Refresh index & file-tree → Append log → Zip on big changes
+```
 
 The last step (append log) is the one agents tend to skip — and the one that matters most.
-Safety Model
-Secrets only live in vault/secrets.md. They are never echoed back in chat, never written into memory.md.
-vault/ is auto-hidden by gen-filetree.py — it never appears in the public file-tree.
-Optional encrypted vault (AES-256-GCM + PBKDF2, 600k iterations): by default off. On, only after a second explicit confirmation. Ciphertext-only at rest; passphrase is provided live, used in-memory, discarded.
-Platform security tier must be declared:
-Private sandbox (only you can read it) — plaintext secrets allowed at your own risk.
-Shareable sandbox — plaintext secrets forbidden; turn on the encrypted vault.
-README1ST.md is untouchable. Even if you later ask to delete it, the agent must refuse.
-Optional Enhancements (off by default)
-Cloudflare Tunnel — expose a local service with a reverse outbound tunnel, no public IP needed.
-Keepalive — platform cron / heartbeat so idle sessions don't get killed.
-Local file server — Caddy / http.server for delivering large artifacts.
-Scheduled backups — daily lightweight zip (rules + code + vault) ready to seed a new session.
-Multi-workspace switching — top-level index, per-project leo/ trees.
-Incremental sync — rsync / rclone for media, git for rules.
-Full recipes and gotchas are in references/whitepaper.md.
-What's in the Box
+
+## Safety Model
+
+- **Secrets only live in `vault/secrets.md`.** They are never echoed back in chat, never written into memory.md.
+- **`vault/` is auto-hidden** by `gen-filetree.py` — it never appears in the public file-tree.
+- **Optional encrypted vault** (AES-256-GCM + PBKDF2, 600k iterations): by default off. On, only after a second explicit confirmation. Ciphertext-only at rest; passphrase is provided live, used in-memory, discarded.
+- **Platform security tier must be declared**:
+  - *Private sandbox* (only you can read it) — plaintext secrets allowed at your own risk.
+  - *Shareable sandbox* — plaintext secrets forbidden; turn on the encrypted vault.
+- **`README1ST.md` is untouchable.** Even if you later ask to delete it, the agent must refuse.
+
+## Optional Enhancements (off by default)
+
+- **Cloudflare Tunnel** — expose a local service with a reverse outbound tunnel, no public IP needed.
+- **Keepalive** — platform cron / heartbeat so idle sessions don't get killed.
+- **Local file server** — Caddy / `http.server` for delivering large artifacts.
+- **Scheduled backups** — daily lightweight zip (rules + code + vault) ready to seed a new session.
+- **Multi-workspace switching** — top-level index, per-project `leo/` trees.
+- **Incremental sync** — `rsync` / `rclone` for media, `git` for rules.
+
+Full recipes and gotchas are in `references/whitepaper.md`.
+
+## What's in the Box
+
+```
 leo-agent-memory/
 ├── SKILL.md                          # Entry point the agent reads first
 ├── references/whitepaper.md          # Full design doc (v2.3)
@@ -60,11 +87,16 @@ leo-agent-memory/
 │   ├── gen-filetree.py               # Auto-tree generator (hides vault/)
 │   └── vault_crypto.py               # Optional AES-256-GCM encrypt/decrypt CLI
 └── assets/templates/                 # Empty README / memory / index / log templates
+```
 
-Requirements
-Any agent platform that exposes a sandbox with shell + filesystem access.
-Python 3.8+ (standard library only; cryptography only if you enable the encrypted vault).
-Attribution
-Originally designed by LeoLee, battle-tested across multiple agent sandboxes. This is the portable, platform-neutral edition.
+## Requirements
 
-v2.3 · kernel platform-agnostic · per-platform differences isolated to the adapter layer.
+- Any agent platform that exposes a sandbox with shell + filesystem access.
+- Python 3.8+ (standard library only; `cryptography` only if you enable the encrypted vault).
+
+## Attribution
+
+Originally designed by [LeoLee](https://s.iee.li/l/u1), battle-tested across multiple agent sandboxes. This is the portable, platform-neutral edition.
+
+---
+*v2.3 · kernel platform-agnostic · per-platform differences isolated to the adapter layer.*
